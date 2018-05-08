@@ -15,13 +15,21 @@ import ceph_argparse
 log = logging.getLogger(__name__)
 
 def do_bench(secs, name, ioctx, data):
-    b = a = time.monotonic()
+    try:
+        b = a = time.monotonic()
+    except (AttributeError):
+        import monotonic
+        b = a = monotonic.monotonic()
     stop = a + secs
     ops = 0
     try:
         while b <= stop:
             ioctx.write(name, next(data))
-            b = time.monotonic()
+            try:
+                b = time.monotonic()
+            except (AttributeError):
+                import monotonic
+                b = monotonic.monotonic()
             ops += 1
     finally:
         try:
